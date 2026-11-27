@@ -40,6 +40,34 @@ Swagger: http://127.0.0.1:8000/docs
 | GET | `/api/features?username=...&repo_url=...` | All feature IDs of a user in a repo |
 | POST | `/api/tasks` | Add a task to a feature, returns a unique `task_id` |
 | GET | `/api/tasks?username=...&repo_url=...&feature_id=...` | All tasks of a feature, sorted by creation time |
+| GET | `/api/agents` | Agents that can be started |
+| POST | `/api/agents/init/run` | **runInit** - start the INIT agent, returns `202 {runId}` (`?wait=true` waits for the full result) |
+| GET | `/api/agents/init/runs/{run_id}` | Run status, progress per node, result when done |
+| GET | `/api/agents/init/runs/{run_id}/report` | The INIT report (`INIT.md`) |
+
+### Agents
+
+The backend does not run agents itself: it forwards the request to the agent's own server
+and returns its response as is. The INIT agent lives in the Generic Agent repository and must be running:
+
+```powershell
+python -m uvicorn generic_agent.api:app --host 127.0.0.1 --port 3000
+```
+
+Its address is `INIT_AGENT_URL` in `.env` (default `http://127.0.0.1:3000`). The body of
+`POST /api/agents/init/run` is the agent's `InitRequest` (every field optional), e.g.:
+
+```json
+{
+  "feature_id": "3f1c...",
+  "project": { "repo_url": "https://github.com/org/repo" },
+  "inputs": { "project_brief": "Short description" },
+  "dry_run": true
+}
+```
+
+If the agent server is down the backend returns `503`. To add another agent, add an entry in
+`_agents()` in `app/routers/agents.py` and its URL in `app/config.py`.
 
 Example body for POST:
 

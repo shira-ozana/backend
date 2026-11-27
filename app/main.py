@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routers import auth, features, repositories, tasks, users
+from app.routers import agents, auth, features, repositories, tasks, users
 
 app = FastAPI(title=get_settings().app_name, version="0.1.0")
 
@@ -20,6 +20,7 @@ app.include_router(auth.router)
 app.include_router(repositories.router)
 app.include_router(features.router)
 app.include_router(tasks.router)
+app.include_router(agents.router)
 
 
 # cd "$env:USERPROFILE\Desktop\sdlc"

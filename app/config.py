@@ -32,6 +32,11 @@ class Settings(BaseSettings):
     smtp_from: Optional[str] = None
     smtp_starttls: bool = True
 
+    # שרתי הסוכנים (Agents)
+    init_agent_url: str = "http://127.0.0.1:3000"
+    agent_request_timeout: float = 30.0  # שניות - לבקשות רגילות (הפעלה / סטטוס)
+    agent_wait_timeout: float = 1800.0  # שניות - כשמחכים לסיום ריצה (?wait=true)
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
