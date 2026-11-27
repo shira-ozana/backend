@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -14,6 +15,22 @@ class Settings(BaseSettings):
     repositories_table: str = "repositories"
     features_table: str = "features"
     tasks_table: str = "tasks"
+
+    # Sessions. Empty SESSION_SECRET derives a key from ENCRYPTION_KEY.
+    session_secret: Optional[str] = None
+    session_ttl_hours: int = 24 * 7
+    # Set true when the API is served over HTTPS.
+    session_cookie_secure: bool = False
+
+    # How sign-in codes reach the user: "smtp", "console" (development: written to the server
+    # log) or "disabled" (sign-in for existing accounts returns 503).
+    auth_email_mode: str = "disabled"
+    smtp_host: Optional[str] = None
+    smtp_port: int = 587
+    smtp_user: Optional[str] = None
+    smtp_password: Optional[str] = None
+    smtp_from: Optional[str] = None
+    smtp_starttls: bool = True
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

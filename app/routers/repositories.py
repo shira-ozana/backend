@@ -1,8 +1,10 @@
-from fastapi import APIRouter, HTTPException, status
+from typing import Any, Dict
 
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from app.auth import require_session
 from app.config import get_settings
 from app.db import get_supabase
-from app.lookups import get_user_id_by_username
 from app.schemas import RepositoryCreate, RepositoryOut
 from app.security import encrypt
 
@@ -10,10 +12,14 @@ router = APIRouter(prefix="/api/repositories", tags=["repositories"])
 
 
 @router.post("", response_model=RepositoryOut, status_code=status.HTTP_201_CREATED)
-def create_repository(payload: RepositoryCreate) -> RepositoryOut:
-    user_id = get_user_id_by_username(payload.username)
+def create_repository(
+    payload: RepositoryCreate, user: Dict[str, Any] = Depends(require_session)
+) -> RepositoryOut:
+    """Requires a session. `username` stays in the body (existing contract) but must match it."""
+    if payload.username != user["username"]:
+        raise HTTPException(status_code=403, detail="username does not match the signed-in user")
     record = {
-        "user_id": user_id,
+        "user_id": user["user_id"],
         "github_user": payload.github_user,
         "github_password_encrypted": encrypt(payload.github_password),
         "repo_url": str(payload.repo_url),
@@ -29,7 +35,7 @@ def create_repository(payload: RepositoryCreate) -> RepositoryOut:
     return RepositoryOut(
         id=row["id"],
         user_id=row["user_id"],
-        username=payload.username,
+        username=user["username"],
         github_user=row["github_user"],
         repo_url=row["repo_url"],
         created_at=row["created_at"],

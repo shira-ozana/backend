@@ -107,3 +107,18 @@ class TasksList(BaseModel):
     repo_url: str
     feature_id: str
     tasks: list[TaskItem] = Field(..., description="ממוין לפי זמן יצירה (מהישן לחדש)")
+
+
+class SignInRequest(BaseModel):
+    identifier: str = Field(..., min_length=1, max_length=320, description="username או מייל")
+
+
+class SignInChallenge(BaseModel):
+    challenge: str = Field(..., description="נשלח חזרה עם הקוד שהגיע למייל")
+    expires_in: int = Field(..., description="שניות עד שהקוד פג תוקף")
+    delivery: str = "email"
+
+
+class SignInVerify(BaseModel):
+    challenge: str = Field(..., min_length=1)
+    code: str = Field(..., min_length=1, max_length=16)
